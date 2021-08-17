@@ -74,19 +74,20 @@
         <p class="calc-p">Let’s check your hash rate to see how much you will earn today, Exercitation veniam consequat sunt nostrud amet.</p>
       </div>
       <div class="calc-form">
-        <input type="number" name="name" id="hash-rate" required placeholder="Enter your hash rate" class="hash-rate">
-        <select name="hash_rate" class="select-hash-rate" id="select-hash-rate">
+        <input type="number" v-model="title" @keyup.enter="responseResult" id="hash-rate" required placeholder="Enter your hash rate" class="hash-rate">
+        <select v-model="selected" class="select-hash-rate" id="select-hash-rate">
           <option value="1">MH&#47;s</option>
           <option value="1000">GH&#47;s</option>
           <option value="1000000000">TH&#47;s</option>
         </select>
-        <button class="button-hr">Calculate</button>
+        <button class="button-hr" @click="responseResult">Calculate</button>
       </div>
     </section>
     <section class="section3">
       <div class="calc-continued">
+        <Loader v-if="loading"/>
         <p class="estimated">ESTIMATED 24 HOUR REVENUE:</p>
-        <p class="count">0.055 130 59 ETH <span class="count-bl">(&#36;1275)</span></p>
+        <p class="count">{{ amount }} ETH <span class="count-bl">(&#36;{{ amountD }})</span></p>
         <p class="revenue">Revenue will change based on mining difficulty and Ethereum price.</p>
       </div>
       <h2 class="s3-heading">Trade securely and market the high growth cryptocurrencies.</h2>
@@ -1196,12 +1197,45 @@ ul {
 
 import StartMining from "@/components/StartMining";
 import popUp from "@/components/popUp";
+import Loader from "@/components/Loader";
 
 export default {
   name: 'Home',
+  data() {
+    return {
+      title: '',
+      selected: 1,
+      MHs: 0.00006,
+      prise: '',
+      amount: '555 444 333',
+      amountD: '1250',
+      loading: false,
+    }
+  },
   components: {
     StartMining,
     popUp,
+    Loader,
   },
+  methods: {
+    responseResult() {
+      this.loading = true;
+      fetch("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD")
+          .then((response) => {
+            const result = response.json();
+            return result;
+          })
+          .then((data) => {
+            this.prise = data.USD;
+            this.loading = false;
+
+            this.amount = +(this.MHs * this.selected * this.title).toFixed(6);
+            this.amountD = +(this.prise * this.amount).toFixed(2);
+          })
+          .catch(() => {
+            console.log("error");
+          });
+    }
+  }
 }
 </script>
